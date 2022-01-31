@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from './prisma.service';
-import {Enrolls} from '@prisma/client';
+import {Enrolls, PrismaClient, Prisma} from '@prisma/client';
 import { EnrollsDto } from './../dto/enrolls.dto';
 
 @Injectable()
@@ -19,20 +19,30 @@ export class EnrollsService{
             input['date'] = new Date(input.date);   
         console.log(input['date']);
         //creating enrollment in db
-        const enrollment = await this.prismaService.enrolls.create({    
-            data: {
-                course_name: input.course_name,
-                date: input.date,
-                course_id: parseInt("" + input.course_id),
-                company: {
-                    create: {
-                        company_email: input.company_email,
-                        company_phone: input.company_phone,
-                        company_name: input.company_name
+        console.log(input)
+        let enrollment;
+        try{
+            enrollment = await this.prismaService.enrolls.create({    
+                data: {
+                    course_name: input.course_name,
+                    date: input.date,
+                    course_id: parseInt("" + input.course_id),
+                    company: {
+                        create: {
+                            company_email: input.company_email,
+                            company_phone: input.company_phone,
+                            company_name: input.company_name
+                        }
                     }
                 }
+            })
+        }catch (e) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+              // The .code property can be accessed in a type-safe manner
+              console.log("Error:" + e.code + " Message:" + e.message)
             }
-        })
+            throw e
+        }
 
         //processing participant data
         //adding company_id and enrolls_id for each participant
@@ -41,10 +51,20 @@ export class EnrollsService{
             participant['company_id'] = enrollment.company_id;
             participant['enrolls_id'] = enrollment.id;
         }
+        
         console.log(participants)
-        const registerParticipants = await this.prismaService.participant.createMany({    
-            data: participants
-        })
+        try{
+            const registerParticipants = await this.prismaService.participant.createMany({    
+                data: participants
+            })
+        }catch (e) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+              // The .code property can be accessed in a type-safe manner
+              console.log("Error:" + e.code + " Message:" + e.message)
+            }
+            throw e
+        }
+        
         return enrollment;
     }
 }

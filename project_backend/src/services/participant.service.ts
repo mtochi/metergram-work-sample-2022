@@ -1,13 +1,22 @@
 import {Injectable} from '@nestjs/common';
 import {PrismaService} from './prisma.service';
-import {Participant} from '@prisma/client';
+import {Participant, Prisma} from '@prisma/client';
 
 @Injectable()
 export class ParticipantService{
     constructor(private prismaService: PrismaService){}
-
+    
     getParticipants(): Participant[] | Promise<Participant[]> {
-        return this.prismaService.participant.findMany();
+        try{
+            return this.prismaService.participant.findMany();
+        }catch (e) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError) {
+              // The .code property can be accessed in a type-safe manner
+              console.log("Error:" + e.code + " Message:" + e.message)
+            }
+            throw e
+        }
+        
     }
     
 }

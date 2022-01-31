@@ -37,6 +37,7 @@ export class AddEnrollment extends React.Component<IMyComponentState> {
   handleCourseChange(event) {
     this.setState({ data: { dates: [], course: event.target.value } });
     this.setState({ course_name: event.target.value });
+    this.setState( {course_id: event.target.key} )
   }
   handleDateChange(event) {
     this.setState({ data: { ...this.state.data, dates: event.target.value } });
@@ -51,7 +52,7 @@ export class AddEnrollment extends React.Component<IMyComponentState> {
     this.setState({ open: false });
     window.location.reload();
   };
-
+  //the onclick event calls this function when adding new participant
   addParticipant() {
     this.setState((state) => ({
       participants: [
@@ -60,7 +61,7 @@ export class AddEnrollment extends React.Component<IMyComponentState> {
       ],
     }));
   }
-
+  //the function for adding more participants 
   createUI() {
     return this.state.participants.map((el, i) => (
       <div key={i}>
@@ -132,6 +133,7 @@ export class AddEnrollment extends React.Component<IMyComponentState> {
   resetState() {
     this.resetState();
   }
+  //POST Submit in order to create enrollment in database
   submit = async (e) => {
     e.preventDefault();
     const data = new FormData();
@@ -174,7 +176,7 @@ export class AddEnrollment extends React.Component<IMyComponentState> {
   render() {
     //the data with which courses names drop down list is filled
     let courses = this.state.listState.map((course) => (
-      <option key={course.name} value={course.name}>
+      <option key={course.id} value={course.name}>
         {course.name}
       </option>
     ));
